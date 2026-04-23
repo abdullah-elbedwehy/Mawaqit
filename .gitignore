@@ -39,3 +39,8 @@ npm-debug.log*
 .idea/
 *.swp
 *.swo
+
+# Markdown
+*.md
+!README.md
+!readme.md
