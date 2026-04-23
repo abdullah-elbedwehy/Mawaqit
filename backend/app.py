@@ -20,6 +20,9 @@ def create_app():
     def health():
         return {"status": "ok"}, 200
 
+    from auth import auth_bp
+    app.register_blueprint(auth_bp)
+
     start_scheduler(app)
     return app
 
