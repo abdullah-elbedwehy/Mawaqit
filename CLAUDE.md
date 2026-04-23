@@ -103,6 +103,12 @@ FRONTEND_URL=http://localhost:5173
 
 ---
 
+## Frontend Design
+
+When working on any frontend UI, always invoke the `/frontend-design` and `/impeccable` skills to ensure the highest design quality. Do not write frontend UI without running these skills first.
+
+---
+
 ## MVP Scope (do not expand)
 - Google sign-in
 - Auto city detection with manual override
