@@ -10,7 +10,7 @@ def detect_city_from_ip(ip_address: str) -> dict:
     try:
         response = requests.get(
             f"{IP_API_URL}/{ip_address}",
-            params={"fields": "city,country,countryCode,status,message"},
+            params={"fields": "city,country,countryCode,timezone,status,message"},
             timeout=5,
         )
         response.raise_for_status()
@@ -25,6 +25,7 @@ def detect_city_from_ip(ip_address: str) -> dict:
     return {
         "city": payload.get("city"),
         "country": payload.get("country"),
+        "timezone": payload.get("timezone"),
     }
 
 

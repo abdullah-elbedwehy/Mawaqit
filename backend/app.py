@@ -45,6 +45,9 @@ def create_app():
         city = request.args.get("city") or user.city
         country = request.args.get("country") or user.country
 
+        if not city or not country:
+            return {"error": "City not set. Update your settings first."}, 400
+
         try:
             week_times = get_week_prayer_times(city, country)
         except ValueError as exc:
@@ -57,6 +60,76 @@ def create_app():
             }
             for day in week_times
         ], 200
+
+    @app.post("/api/sync")
+    def sync():
+        from auth import get_current_user
+        from scheduler import sync_user
+
+        user = get_current_user()
+        if not user:
+            return {"error": "not authenticated"}, 401
+        if not user.city:
+            return {"error": "City not set. Please update your settings first."}, 400
+
+        sync_user(user)
+        return {"status": "synced"}, 200
+
+    @app.post("/api/disconnect")
+    def disconnect():
+        from auth import get_current_user
+        from calendar_service import build_service, delete_all_user_events
+        from models import PrayerEvent
+
+        user = get_current_user()
+        if not user:
+            return {"error": "not authenticated"}, 401
+
+        if user.calendar_id:
+            try:
+                service = build_service(user)
+                delete_all_user_events(service, user, user.calendar_id)
+            except Exception:
+                PrayerEvent.query.filter_by(user_id=user.id).delete()
+                db.session.commit()
+        else:
+            PrayerEvent.query.filter_by(user_id=user.id).delete()
+            db.session.commit()
+
+        user.calendar_id = None
+        db.session.commit()
+        from flask import session
+        session.clear()
+        return {"status": "disconnected"}, 200
+
+    @app.patch("/api/settings")
+    def settings():
+        from auth import get_current_user
+
+        user = get_current_user()
+        if not user:
+            return {"error": "not authenticated"}, 401
+
+        data = request.get_json(silent=True) or {}
+        allowed = {"city", "country", "timezone", "event_duration_min", "reminders_enabled"}
+
+        for key in allowed:
+            if key not in data:
+                continue
+            if key == "event_duration_min":
+                val = data[key]
+                if not isinstance(val, int) or not (1 <= val <= 60):
+                    return {"error": "event_duration_min must be between 1 and 60"}, 400
+            setattr(user, key, data[key])
+
+        db.session.commit()
+        return {
+            "city": user.city,
+            "country": user.country,
+            "timezone": user.timezone,
+            "event_duration_min": user.event_duration_min,
+            "reminders_enabled": user.reminders_enabled,
+        }, 200
 
     from auth import auth_bp
     app.register_blueprint(auth_bp)

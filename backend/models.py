@@ -15,6 +15,7 @@ class User(db.Model):
     event_duration_min = db.Column(db.Integer, default=5)
     reminders_enabled = db.Column(db.Boolean, default=True)
     calendar_id = db.Column(db.Text)
+    timezone = db.Column(db.Text, default="Asia/Riyadh")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     events = db.relationship("PrayerEvent", backref="user", lazy=True)
 

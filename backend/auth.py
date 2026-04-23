@@ -10,7 +10,8 @@ from models import User, db
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-os.environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
+if os.getenv("FLASK_ENV") == "development":
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 GOOGLE_AUTH_URI = "https://accounts.google.com/o/oauth2/auth"
 GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
@@ -79,13 +80,16 @@ def callback():
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
 
-    response = requests.get(
-        GOOGLE_USERINFO_URL,
-        headers={"Authorization": f"Bearer {credentials.token}"},
-        timeout=10,
-    )
-    response.raise_for_status()
-    userinfo = response.json()
+    try:
+        response = requests.get(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {credentials.token}"},
+            timeout=10,
+        )
+        response.raise_for_status()
+        userinfo = response.json()
+    except requests.RequestException:
+        return {"error": "Failed to fetch user info from Google"}, 502
 
     user = User.query.filter_by(google_id=userinfo["sub"]).first()
     if user:
