@@ -2,7 +2,7 @@
 
 ## What This Project Is
 
-Mawaqit is a school-project web app that syncs the five daily Islamic prayer times into a user's Google Calendar. The user signs in with Google once, the app auto-detects their city, creates a dedicated calendar named **Mawaqit**, and keeps the next 7 days of prayer events updated daily.
+School-project web app. Syncs five daily Islamic prayer times into user's Google Calendar. User signs in with Google once, app auto-detects city, creates calendar named **Mawaqit**, keeps next 7 days of prayer events updated daily.
 
 ---
 
@@ -78,13 +78,13 @@ Mawaqit is a school-project web app that syncs the five daily Islamic prayer tim
 ## Key Decisions
 
 - **City detection**: IP geolocation via `ip-api.com`. Inaccurate on VPNs — manual override always available.
-- **Event update strategy**: store `gcal_event_id` per prayer per day. On sync, update existing events if time changed; create if missing. Never delete and recreate.
-- **Old event cleanup**: delete Google Calendar events (and DB rows) for dates before today during each sync run.
-- **7-day window**: always maintain events for today + next 6 days.
-- **Scheduler**: APScheduler runs inside Flask. Restarts reset the schedule — acceptable for school demo.
-- **Settings kept minimal**: city, event duration, reminders on/off, disconnect, manual resync.
-- **Calculation method / madhhab**: not exposed in UI for simplicity. Use AlAdhan defaults.
-- **No duplicate events**: enforced by looking up `gcal_event_id` in DB before creating.
+- **Event update strategy**: store `gcal_event_id` per prayer per day. On sync, update existing if time changed; create if missing. Never delete and recreate.
+- **Old event cleanup**: delete Google Calendar events (and DB rows) for dates before today on each sync.
+- **7-day window**: maintain events for today + next 6 days.
+- **Scheduler**: APScheduler inside Flask. Restarts reset schedule — acceptable for school demo.
+- **Settings minimal**: city, event duration, reminders on/off, disconnect, manual resync.
+- **Calculation method / madhhab**: not in UI. Use AlAdhan defaults.
+- **No duplicate events**: check `gcal_event_id` in DB before creating.
 
 ---
 
@@ -105,7 +105,7 @@ FRONTEND_URL=http://localhost:5173
 
 ## Frontend Design
 
-When working on any frontend UI, always invoke the `/frontend-design` and `/impeccable` skills to ensure the highest design quality. Do not write frontend UI without running these skills first.
+Any frontend UI: invoke `/frontend-design` and `/impeccable` skills first. No frontend without running these.
 
 ---
 
