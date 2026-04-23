@@ -24,8 +24,13 @@ def create_app():
     def detect_city():
         from prayer_service import detect_city_from_ip
 
-        forwarded_for = request.headers.get("X-Forwarded-For", request.remote_addr or "")
-        client_ip = forwarded_for.split(",")[0].strip()
+        forwarded_for = request.headers.get("X-Forwarded-For", "")
+        client_ip = (
+            forwarded_for.split(",")[0].strip()
+            or request.headers.get("X-Real-IP", "").strip()
+            or request.headers.get("CF-Connecting-IP", "").strip()
+            or (request.remote_addr or "").strip()
+        )
 
         try:
             location = detect_city_from_ip(client_ip)

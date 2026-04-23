@@ -1,15 +1,38 @@
+import ipaddress
 import requests
 from datetime import date, timedelta
+from typing import Optional
 
 ALADHAN_URL = "http://api.aladhan.com/v1/timingsByCity"
 IP_API_URL = "http://ip-api.com/json"
 PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"]
 
 
+def _should_use_direct_lookup(ip_address: Optional[str]) -> bool:
+    if not ip_address:
+        return False
+
+    try:
+        parsed_ip = ipaddress.ip_address(ip_address)
+    except ValueError:
+        return False
+
+    return not (
+        parsed_ip.is_private
+        or parsed_ip.is_loopback
+        or parsed_ip.is_link_local
+        or parsed_ip.is_reserved
+        or parsed_ip.is_unspecified
+        or parsed_ip.is_multicast
+    )
+
+
 def detect_city_from_ip(ip_address: str) -> dict:
+    lookup_url = f"{IP_API_URL}/{ip_address}" if _should_use_direct_lookup(ip_address) else IP_API_URL
+
     try:
         response = requests.get(
-            f"{IP_API_URL}/{ip_address}",
+            lookup_url,
             params={"fields": "city,country,countryCode,timezone,status,message"},
             timeout=5,
         )
