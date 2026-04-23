@@ -20,6 +20,10 @@ class User(db.Model):
 
 class PrayerEvent(db.Model):
     __tablename__ = "prayer_events"
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "prayer_name", "event_date", name="uq_prayer_event_per_day"),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     prayer_name = db.Column(db.Text, nullable=False)
